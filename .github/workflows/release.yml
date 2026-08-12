@@ -1,4 +1,4 @@
-name: Stable Release Build
+Name: Stable Release Build
 
 on:
   push:
@@ -54,14 +54,29 @@ jobs:
             -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=US"
 
-      - name: Decode release keystore
+      - name: Decode and fix release keystore format
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
           set -euo pipefail
           mkdir -p app/keystore
           test -n "$KEYSTORE_BASE64"
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/keystore/release.keystore
+          
+          # 1. Decode raw secret to temporary file
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/keystore/release_raw.keystore
+          
+          # 2. Convert to standard JKS format to avoid JDK 21 ASN.1 parsing crash in Gradle
+          keytool -importkeystore \
+            -srckeystore app/keystore/release_raw.keystore \
+            -srcstorepass "$STORE_PASSWORD" \
+            -destkeystore app/keystore/release.keystore \
+            -deststorepass "$STORE_PASSWORD" \
+            -deststoretype JKS \
+            -noprompt
+
+          # 3. Clean up raw file
+          rm app/keystore/release_raw.keystore
 
       - name: Validate release keystore
         env:

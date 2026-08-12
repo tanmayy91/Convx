@@ -64,7 +64,6 @@ jobs:
           set -euo pipefail
           mkdir -p app/keystore
 
-          # Set defaults if secrets are not set in GitHub repository settings
           FINAL_STORE_PASS="${STORE_PASSWORD:-android}"
           FINAL_KEY_PASS="${KEY_PASSWORD:-android}"
           FINAL_ALIAS="${KEY_ALIAS:-androiddebugkey}"
@@ -73,7 +72,6 @@ jobs:
             echo "::notice::Using provided KEYSTORE secret..."
             printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/keystore/release_raw.keystore
 
-            # Convert to standard JKS to prevent JDK 21 Bouncy Castle ASN.1 parsing crashes
             keytool -importkeystore \
               -srckeystore app/keystore/release_raw.keystore \
               -srcstorepass "$FINAL_STORE_PASS" \
@@ -83,7 +81,7 @@ jobs:
               -noprompt
             rm app/keystore/release_raw.keystore
           else
-            echo "::notice::No KEYSTORE secret found. Auto-generating a release keystore for zero-interaction build..."
+            echo "::notice::No KEYSTORE secret found. Auto-generating a release keystore..."
             keytool -genkey -v \
               -keystore app/keystore/release.keystore \
               -storepass "$FINAL_STORE_PASS" \
@@ -96,7 +94,6 @@ jobs:
               -dname "CN=Convx Release,O=Convx,C=US"
           fi
 
-          # Export fallbacks to GITHUB_ENV so Gradle build step receives valid values
           echo "EFFECTIVE_STORE_PASS=$FINAL_STORE_PASS" >> "$GITHUB_ENV"
           echo "EFFECTIVE_KEY_PASS=$FINAL_KEY_PASS" >> "$GITHUB_ENV"
           echo "EFFECTIVE_KEY_ALIAS=$FINAL_ALIAS" >> "$GITHUB_ENV"
@@ -111,17 +108,29 @@ jobs:
         run: |
           ./gradlew assembleUniversalGmsRelease --no-configuration-cache --console=plain --warning-mode summary -x lint
 
-      - name: Upload APK to Release
+      - name: Create Release & Upload APK
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
           TAG="${{ github.event.inputs.tag || github.ref_name }}"
           APK_PATH=$(find app/build/outputs/apk -name '*.apk' | head -n 1)
-          
-          if [ -f "$APK_PATH" ]; then
-            mv "$APK_PATH" "convx-${TAG}.apk"
-            gh release upload "$TAG" "convx-${TAG}.apk" --repo "${{ github.repository }}" --clobber
-          else
+
+          if [ ! -f "$APK_PATH" ]; then
             echo "::error::No APK file found in app/build/outputs/apk"
             exit 1
+          fi
+
+          mv "$APK_PATH" "convx-${TAG}.apk"
+
+          # Check if the release exists, if not create it dynamically
+          if gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "Release $TAG exists. Uploading APK..."
+            gh release upload "$TAG" "convx-${TAG}.apk" --repo "${{ github.repository }}" --clobber
+          else
+            echo "Release $TAG does not exist. Creating release and uploading APK..."
+            gh release create "$TAG" "convx-${TAG}.apk" \
+              --repo "${{ github.repository }}" \
+              --title "Release $TAG" \
+              --generate-notes
           fi

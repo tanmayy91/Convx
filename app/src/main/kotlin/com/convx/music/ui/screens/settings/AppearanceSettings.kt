@@ -86,6 +86,7 @@ import com.convx.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.unit.dp
 import com.convx.music.ui.utils.appTopBarWindowInsets
 import androidx.navigation.NavController
+import com.convx.music.BuildConfig
 import com.convx.music.ui.utils.appTopBarWindowInsets
 import com.convx.music.LocalPlayerAwareWindowInsets
 import com.convx.music.ui.utils.appTopBarWindowInsets
@@ -550,12 +551,14 @@ fun AppearanceSettings(
             Column {
         Material3SettingsGroup(
             title = stringResource(R.string.theme_colors),
-            items = listOf(
+            items = buildList {
+                add(
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.palette),
                     title = { Text(stringResource(R.string.theme_colors)) },
                     onClick = { navController.navigate("settings/appearance/theme") }
-                ),
+                ))
+                add(
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.alphabet_cyrillic),
                     title = { Text(stringResource(R.string.app_font)) },
@@ -570,32 +573,41 @@ fun AppearanceSettings(
                         Text(fontLabel)
                     },
                     onClick = { navController.navigate("settings/appearance/font") }
-                ),
+                ))
+                add(
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.convx_logo),
                     title = { Text(stringResource(R.string.app_icon)) },
                     description = { Text(stringResource(R.string.app_icon_desc)) },
                     onClick = { navController.navigate("settings/appearance/appicon") }
-                ),
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.palette),
-                    title = { Text(stringResource(R.string.presets)) },
-                    description = { Text(stringResource(R.string.presets_desc)) },
-                    onClick = { navController.navigate("settings/appearance/presets") }
-                ),
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.tune),
-                    title = { Text(stringResource(R.string.player_icons)) },
-                    description = { Text(stringResource(R.string.player_icons_desc)) },
-                    onClick = { navController.navigate("settings/appearance/playericons") }
-                ),
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.edit),
-                    title = { Text(stringResource(R.string.diy)) },
-                    description = { Text(stringResource(R.string.diy_desc)) },
-                    onClick = { navController.navigate("settings/appearance/diy") }
-                )
-            )
+                ))
+                if (BuildConfig.ALL_SETTINGS_ENABLED) {
+                    add(
+                        Material3SettingsItem(
+                            icon = painterResource(R.drawable.palette),
+                            title = { Text(stringResource(R.string.presets)) },
+                            description = { Text(stringResource(R.string.presets_desc)) },
+                            onClick = { navController.navigate("settings/appearance/presets") }
+                        )
+                    )
+                    add(
+                        Material3SettingsItem(
+                            icon = painterResource(R.drawable.tune),
+                            title = { Text(stringResource(R.string.player_icons)) },
+                            description = { Text(stringResource(R.string.player_icons_desc)) },
+                            onClick = { navController.navigate("settings/appearance/playericons") }
+                        )
+                    )
+                    add(
+                        Material3SettingsItem(
+                            icon = painterResource(R.drawable.edit),
+                            title = { Text(stringResource(R.string.diy)) },
+                            description = { Text(stringResource(R.string.diy_desc)) },
+                            onClick = { navController.navigate("settings/appearance/diy") }
+                        )
+                    )
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(27.dp))

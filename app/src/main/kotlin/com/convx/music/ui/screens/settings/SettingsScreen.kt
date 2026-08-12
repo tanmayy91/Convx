@@ -135,14 +135,6 @@ fun SettingsScreen(
         item(key = "general_section") {
             SettingsSection {
                 SettingsNavItem(
-                    icon = painterResource(if (isUpdateAvailable) R.drawable.convx_logo else R.drawable.network_update),
-                    iconTint = if (isUpdateAvailable) MaterialTheme.colorScheme.error else Color(0xFF007AFF),
-                    title = stringResource(R.string.system_update),
-                    badge = if (isUpdateAvailable) stringResource(R.string.update_available) else null,
-                    onClick = { navController.navigate("settings/update") },
-                )
-                SettingsDivider()
-                SettingsNavItem(
                     icon = painterResource(R.drawable.palette),
                     iconTint = Color(0xFFAF52DE),
                     title = stringResource(R.string.appearance),
@@ -154,6 +146,14 @@ fun SettingsScreen(
                     iconTint = Color(0xFFFF375F),
                     title = stringResource(R.string.player_and_audio),
                     onClick = { navController.navigate("settings/player") },
+                )
+                SettingsDivider()
+                SettingsNavItem(
+                    icon = painterResource(if (isUpdateAvailable) R.drawable.convx_logo else R.drawable.network_update),
+                    iconTint = if (isUpdateAvailable) MaterialTheme.colorScheme.error else Color(0xFF007AFF),
+                    title = stringResource(R.string.system_update),
+                    badge = if (isUpdateAvailable) stringResource(R.string.update_available) else null,
+                    onClick = { navController.navigate("settings/update") },
                 )
             }
         }
@@ -182,8 +182,7 @@ fun SettingsScreen(
 
         item(key = "spacer_activity") { Spacer(Modifier.height(24.dp)) }
 
-        // Section: Activity — history/stats moved here from the top bar, which now
-        // only shows the logo and this settings/profile pill.
+        // Section: Activity
         item(key = "activity_header") { SettingsSectionHeader("ACTIVITY") }
         item(key = "activity_section") {
             SettingsSection {

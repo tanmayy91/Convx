@@ -1,0 +1,1 @@
+- [Release signing keystore](release-signing-keystore.md) — detect JKS vs PKCS12 explicitly in CI; JVM defaults can misread the release secret.

@@ -6,6 +6,17 @@ val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
+val appConfig = Properties()
+val appConfigFile = rootProject.file("config/app.properties")
+if (appConfigFile.exists()) {
+    appConfig.load(appConfigFile.inputStream())
+}
+
+fun appConfigBoolean(name: String, defaultValue: Boolean): Boolean =
+    appConfig.getProperty(name)?.trim()?.toBooleanStrictOrNull() ?: defaultValue
+
+val allSettingsEnabled = appConfigBoolean("allSettings", defaultValue = true)
+
 plugins {
     id("com.android.application")
     alias(libs.plugins.hilt)
@@ -40,6 +51,7 @@ android {
 //add nightly build label support
         val isNightly = project.hasProperty("nightly") && project.property("nightly") == "true"
         buildConfigField("Boolean", "IS_NIGHTLY", isNightly.toString())
+        buildConfigField("Boolean", "ALL_SETTINGS_ENABLED", allSettingsEnabled.toString())
     }
     
 
@@ -99,6 +111,9 @@ android {
             // Set STORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD before a release build.
             // local.properties is gitignored, so it is a safe place to keep them.
             storeFile = file("keystore/release.keystore")
+            storeType = localProperties.getProperty("STORE_TYPE")
+                ?: System.getenv("KEYSTORE_TYPE")
+                ?: "JKS"
             storePassword = localProperties.getProperty("STORE_PASSWORD") ?: System.getenv("STORE_PASSWORD")
             keyAlias = localProperties.getProperty("KEY_ALIAS") ?: System.getenv("KEY_ALIAS")
             keyPassword = localProperties.getProperty("KEY_PASSWORD") ?: System.getenv("KEY_PASSWORD")

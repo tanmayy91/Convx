@@ -57,8 +57,26 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
         run: |
+          set -euo pipefail
           mkdir -p app/keystore
-          echo "$KEYSTORE_BASE64" | base64 -d > app/keystore/release.keystore
+          test -n "$KEYSTORE_BASE64"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/keystore/release.keystore
+
+      - name: Validate release keystore
+        env:
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if keytool -list -keystore app/keystore/release.keystore \
+              -storetype JKS -storepass "$STORE_PASSWORD" >/dev/null 2>&1; then
+            echo "KEYSTORE_TYPE=JKS" >> "$GITHUB_ENV"
+          elif keytool -list -keystore app/keystore/release.keystore \
+              -storetype PKCS12 -storepass "$STORE_PASSWORD" >/dev/null 2>&1; then
+            echo "KEYSTORE_TYPE=PKCS12" >> "$GITHUB_ENV"
+          else
+            echo "The KEYSTORE secret is not a readable JKS or PKCS12 keystore with KEYSTORE_PASSWORD." >&2
+            exit 1
+          fi
 
       - name: Build Universal GMS Release APK
         env:

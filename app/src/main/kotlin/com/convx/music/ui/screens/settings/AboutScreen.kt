@@ -34,13 +34,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -84,8 +82,6 @@ fun AboutScreen(
     val context = LocalContext.current
     val unknownString = stringResource(R.string.unknown)
 
-    val cookieShape = MaterialShapes.Cookie7Sided.toShape()
-    
     val installedDate = remember {
         try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
@@ -147,22 +143,6 @@ fun AboutScreen(
             }
         }
         
-        // Developer Section
-        Material3SettingsGroup(
-            title = stringResource(R.string.developer_section),
-            items = listOf(
-                Material3SettingsItem(
-                    icon = painterResource(R.drawable.dev),
-                    title = { Text(stringResource(R.string.developer_name)) },
-                    description = { Text(stringResource(R.string.app_developer), color = MaterialTheme.colorScheme.primary) },
-                    tintIcon = false,
-                    iconShape = cookieShape,
-                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/cosmictaserdev-creator") }
-                )
-            )
-        )
-        Spacer(modifier = Modifier.height(27.dp))
-
         // Community Section
         Material3SettingsGroup(
             title = stringResource(R.string.community_section),
@@ -171,7 +151,7 @@ fun AboutScreen(
                     icon = painterResource(R.drawable.github),
                     title = { Text(stringResource(R.string.github_repository)) },
                     description = { Text(stringResource(R.string.view_source_code)) },
-                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/cosmictaserdev-creator/Convx") }
+                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/tanmayy91/Convx") }
                 ),
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.discord),
@@ -222,7 +202,7 @@ fun AboutScreen(
                     icon = painterResource(R.drawable.license_vivi),
                     title = { Text(stringResource(R.string.license)) },
                     description = { Text("GPL-3.0 • Free Open Source Software") },
-                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/cosmictaserdev-creator/Convx/blob/main/LICENSE") }
+                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/tanmayy91/Convx/blob/main/LICENSE") }
                 ),
             )
         )

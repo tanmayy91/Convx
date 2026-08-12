@@ -2,6 +2,7 @@ package com.convx.music.ui.screens.settings
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import com.convx.music.BuildConfig
 import com.convx.music.R
 
 data class SearchableSetting(
@@ -25,9 +26,15 @@ fun getAllSearchableSettings(): List<SearchableSetting> {
         SearchableSetting("Player Theme", null, "Appearance", "settings/appearance/playertheme"),
         SearchableSetting("Liquid Glass", null, "Appearance", "settings/appearance/liquidglass"),
         SearchableSetting(stringResource(R.string.app_icon), null, "Appearance", "settings/appearance/appicon"),
-        SearchableSetting(stringResource(R.string.presets), null, "Appearance", "settings/appearance/presets"),
-        SearchableSetting(stringResource(R.string.player_icons), null, "Appearance", "settings/appearance/playericons"),
-        SearchableSetting(stringResource(R.string.diy), null, "Appearance", "settings/appearance/diy"),
+        *if (BuildConfig.ALL_SETTINGS_ENABLED) {
+            listOf(
+                SearchableSetting(stringResource(R.string.presets), null, "Appearance", "settings/appearance/presets"),
+                SearchableSetting(stringResource(R.string.player_icons), null, "Appearance", "settings/appearance/playericons"),
+                SearchableSetting(stringResource(R.string.diy), null, "Appearance", "settings/appearance/diy")
+            )
+        } else {
+            emptyList()
+        },
         SearchableSetting("Equalizer", null, "Player and audio", "settings/equalizer"),
         SearchableSetting(stringResource(R.string.content), null, "Content", "settings/content"),
         SearchableSetting(stringResource(R.string.content_language), null, "Content", "settings/content"),

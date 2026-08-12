@@ -83,6 +83,7 @@ import com.convx.music.utils.rememberPreference
 import com.convx.music.vivimusic.changelog.ChangelogScreen
 import com.convx.music.vivimusic.commitscreen.CommitScreen
 import com.convx.music.ui.screens.equalizer.axion.AxionEqScreen
+import com.convx.music.BuildConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
 fun NavGraphBuilder.navigationBuilder(
@@ -378,16 +379,18 @@ fun NavGraphBuilder.navigationBuilder(
         AppIconScreen(navController, scrollBehavior)
     }
 
-    composable("settings/appearance/presets") {
-        PresetsScreen(navController, scrollBehavior)
-    }
+    if (BuildConfig.ALL_SETTINGS_ENABLED) {
+        composable("settings/appearance/presets") {
+            PresetsScreen(navController, scrollBehavior)
+        }
 
-    composable("settings/appearance/playericons") {
-        PlayerIconsScreen(navController, scrollBehavior)
-    }
+        composable("settings/appearance/playericons") {
+            PlayerIconsScreen(navController, scrollBehavior)
+        }
 
-    composable("settings/appearance/diy") {
-        DiyEditorScreen(navController)
+        composable("settings/appearance/diy") {
+            DiyEditorScreen(navController)
+        }
     }
 
     composable("settings/appearance/canvas") {

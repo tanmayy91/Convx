@@ -1,0 +1,136 @@
+name: Stable Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build_stable:
+    name: Build Universal GMS Stable Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Set Up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
+
+      - name: Setup FFTW for Android
+        uses: ./.github/actions/setup-fftw
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Generate debug.keystore
+        run: |
+          mkdir -p ~/.android
+          keytool -genkey -v \
+            -keystore ~/.android/debug.keystore \
+            -storepass android \
+            -alias androiddebugkey \
+            -keypass android \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Auto-setup release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mkdir -p app/keystore
+
+          FINAL_STORE_PASS="${STORE_PASSWORD:-android}"
+          FINAL_KEY_PASS="${KEY_PASSWORD:-android}"
+          FINAL_ALIAS="${KEY_ALIAS:-androiddebugkey}"
+
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "::notice::Using provided KEYSTORE secret..."
+            printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/keystore/release_raw.keystore
+
+            keytool -importkeystore \
+              -srckeystore app/keystore/release_raw.keystore \
+              -srcstorepass "$FINAL_STORE_PASS" \
+              -destkeystore app/keystore/release.keystore \
+              -deststorepass "$FINAL_STORE_PASS" \
+              -deststoretype JKS \
+              -noprompt
+            rm app/keystore/release_raw.keystore
+          else
+            echo "::notice::No KEYSTORE secret found. Auto-generating a release keystore..."
+            keytool -genkey -v \
+              -keystore app/keystore/release.keystore \
+              -storepass "$FINAL_STORE_PASS" \
+              -alias "$FINAL_ALIAS" \
+              -keypass "$FINAL_KEY_PASS" \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storetype JKS \
+              -dname "CN=Convx Release,O=Convx,C=US"
+          fi
+
+          echo "EFFECTIVE_STORE_PASS=$FINAL_STORE_PASS" >> "$GITHUB_ENV"
+          echo "EFFECTIVE_KEY_PASS=$FINAL_KEY_PASS" >> "$GITHUB_ENV"
+          echo "EFFECTIVE_KEY_ALIAS=$FINAL_ALIAS" >> "$GITHUB_ENV"
+
+      - name: Build Universal GMS Release APK
+        env:
+          LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+          LASTFM_SECRET: ${{ secrets.LASTFM_SECRET }}
+          STORE_PASSWORD: ${{ env.EFFECTIVE_STORE_PASS }}
+          KEY_ALIAS: ${{ env.EFFECTIVE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ env.EFFECTIVE_KEY_PASS }}
+        run: |
+          ./gradlew assembleUniversalGmsRelease --no-configuration-cache --console=plain --warning-mode summary -x lint
+
+      - name: Create Release & Upload APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          APK_PATH=$(find app/build/outputs/apk -name '*.apk' | head -n 1)
+
+          if [ ! -f "$APK_PATH" ]; then
+            echo "::error::No APK file found in app/build/outputs/apk"
+            exit 1
+          fi
+
+          mv "$APK_PATH" "convx-${TAG}.apk"
+
+          # Check if the release exists, if not create it dynamically
+          if gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "Release $TAG exists. Uploading APK..."
+            gh release upload "$TAG" "convx-${TAG}.apk" --repo "${{ github.repository }}" --clobber
+          else
+            echo "Release $TAG does not exist. Creating release and uploading APK..."
+            gh release create "$TAG" "convx-${TAG}.apk" \
+              --repo "${{ github.repository }}" \
+              --title "Release $TAG" \
+              --generate-notes
+          fi

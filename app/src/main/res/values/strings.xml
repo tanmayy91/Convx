@@ -516,6 +516,7 @@
     <string name="preset_apply">Apply</string>
     <string name="preset_apply_desc">Choose which parts of this preset to apply. Anything you leave unticked stays as it is now.</string>
     <string name="preset_applied">Preset applied</string>
+    <string name="preset_applied_named">%1$s applied</string>
     <string name="preset_rename">Rename</string>
     <string name="preset_share">Share preset</string>
     <string name="preset_delete">Delete</string>

@@ -128,6 +128,7 @@ fun ChangelogScreen(
     fun fetchChangelog(tag: String) {
         isLoading = true
         hasError = false
+        showingCached = false
         coroutineScope.launch(Dispatchers.IO) {
             try {
                 val cachedData = loadChangelogFromCache(context, tag)
@@ -142,7 +143,10 @@ fun ChangelogScreen(
                     }
                 } else {
                     val changelogUrl = URL("https://github.com/tanmayy91/Convx/releases/download/$tag/changelog.json")
-                    val connection = changelogUrl.openConnection() as HttpURLConnection
+                    val connection = (changelogUrl.openConnection() as HttpURLConnection).apply {
+                        connectTimeout = 15_000
+                        readTimeout = 15_000
+                    }
                     connection.setRequestProperty("User-Agent", "ViviMusic-Changelog-App")
                     connection.setRequestProperty("Accept", "application/json")
                     
@@ -198,6 +202,7 @@ fun ChangelogScreen(
                         Timber.tag("ChangelogScreen").e("HTTP Error ${connection.responseCode} for $tag")
                         withContext(Dispatchers.Main) { hasError = true; isLoading = false }
                     }
+                    connection.disconnect()
                 }
             } catch (e: Exception) {
                 Timber.tag("ChangelogScreen").e("Error fetching changelog: ${e.message}")
@@ -215,7 +220,10 @@ fun ChangelogScreen(
         coroutineScope.launch(Dispatchers.IO) {
             try {
             val releasesUrl = URL("https://api.github.com/repos/tanmayy91/Convx/releases")
-                val connection = releasesUrl.openConnection() as HttpURLConnection
+                    val connection = (releasesUrl.openConnection() as HttpURLConnection).apply {
+                        connectTimeout = 15_000
+                        readTimeout = 15_000
+                    }
                 connection.setRequestProperty("User-Agent", "ViviMusic-Changelog-App")
                 connection.setRequestProperty("Accept", "application/vnd.github+json")
                 
@@ -236,19 +244,9 @@ fun ChangelogScreen(
                         ZonedDateTime.parse(publishedAt).format(outputFormatter)
                     } catch (e: Exception) { publishedAt }
 
-                    val assets = obj.getJSONArray("assets")
-                    var changelogUrl: String? = null
-                    for (j in 0 until assets.length()) {
-                        val asset = assets.getJSONObject(j)
-                        if (asset.getString("name") == "changelog.json") {
-                            changelogUrl = asset.getString("browser_download_url")
-                            break
-                        }
-                    }
-
-                    if (changelogUrl != null) {
-                        list.add(ReleaseMetadata(tagName, name, formattedDate, null))
-                    }
+                    // Older releases may not have a changelog.json asset. They still have a
+                    // useful release body, which fetchChangelog already uses as a fallback.
+                    list.add(ReleaseMetadata(tagName, name, formattedDate, null))
                 }
                     withContext(Dispatchers.Main) {
                         val currentVersion = ReleaseMetadata(versionTag, versionTag, context.getString(R.string.current), null)
@@ -259,6 +257,7 @@ fun ChangelogScreen(
                     Timber.tag("ChangelogScreen").e("GitHub API Error ${connection.responseCode}")
                     withContext(Dispatchers.Main) { isFetchingOldReleases = false }
                 }
+                connection.disconnect()
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) { isFetchingOldReleases = false }
             }
@@ -364,8 +363,13 @@ fun ChangelogScreen(
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                     ) {
-                        if (isLoading && availableReleases.isEmpty()) {
-                            // Show nothing or a small loader while initial releases are fetching
+                        if (isLoading && changelogSections.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(48.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator()
+                            }
                         } else {
                             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                                 Row(

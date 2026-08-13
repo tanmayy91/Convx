@@ -72,6 +72,8 @@ import com.convx.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.Surface
 import com.convx.music.ui.utils.appTopBarWindowInsets
 import com.convx.music.ui.component.GlassSwitchCompat as Switch
+import com.convx.music.ui.component.LocalGlassEffectConfig
+import com.convx.music.ui.component.liquidGlass
 import com.convx.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.Text
 import com.convx.music.ui.utils.appTopBarWindowInsets
@@ -467,11 +469,17 @@ fun DiscordSettings(
         // Warning Card
         AnimatedVisibility(visible = !infoDismissed) {
             Card(
+                shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.72f),
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .liquidGlass(
+                        config = LocalGlassEffectConfig.current,
+                        shape = RoundedCornerShape(20.dp),
+                        highlightAlpha = 0.22f,
+                    )
                     .padding(bottom = 16.dp),
             ) {
                 Row(
@@ -507,10 +515,15 @@ fun DiscordSettings(
         Card(
             shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.68f),
             ),
             modifier = Modifier
                 .fillMaxWidth()
+                .liquidGlass(
+                    config = LocalGlassEffectConfig.current,
+                    shape = RoundedCornerShape(28.dp),
+                    highlightAlpha = 0.28f,
+                )
                 .padding(bottom = 16.dp),
         ) {
             Row(
@@ -777,10 +790,15 @@ fun DiscordSettings(
                 // Variable hint
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.68f),
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
+                        .liquidGlass(
+                            config = LocalGlassEffectConfig.current,
+                            shape = RoundedCornerShape(16.dp),
+                            highlightAlpha = 0.2f,
+                        )
                         .padding(top = 8.dp),
                 ) {
                     Row(
@@ -870,10 +888,16 @@ fun RichPresence(
     }
 
     Surface(
-        color = MaterialTheme.colorScheme.surfaceContainer,
+        color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.7f),
         shape = MaterialTheme.shapes.medium,
         shadowElevation = 6.dp,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .liquidGlass(
+                config = LocalGlassEffectConfig.current,
+                shape = MaterialTheme.shapes.medium,
+                highlightAlpha = 0.24f,
+            ),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

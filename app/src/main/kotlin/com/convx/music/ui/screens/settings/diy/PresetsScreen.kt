@@ -75,6 +75,8 @@ import com.convx.music.ui.player.customize.DiyPlayerMockup
 import com.convx.music.ui.player.customize.rememberDiyLayout
 import com.convx.music.ui.utils.appTopBarWindowInsets
 import com.convx.music.ui.utils.backToMain
+import com.convx.music.utils.preset.BuiltInPreset
+import com.convx.music.utils.preset.builtInPresets
 import com.convx.music.utils.preset.PresetStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -268,20 +270,6 @@ fun PresetsScreen(
             )
         },
     ) { padding ->
-        if (presets.isEmpty()) {
-            Box(
-                Modifier.padding(padding).fillMaxSize().padding(32.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = stringResource(R.string.preset_empty),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            return@Scaffold
-        }
-
         LazyVerticalGrid(
             columns = GridCells.Adaptive(150.dp),
             modifier = Modifier.padding(padding).fillMaxSize(),
@@ -289,6 +277,17 @@ fun PresetsScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            items(builtInPresets, key = { "built-in-${it.id}" }) { preset ->
+                BuiltInPresetCard(
+                    preset = preset,
+                    onClick = {
+                        scope.launch {
+                            withContext(Dispatchers.IO) { preset.apply(context) }
+                            message = context.getString(R.string.preset_applied_named, preset.name)
+                        }
+                    },
+                )
+            }
             items(presets, key = { it.id }) { meta ->
                 PresetCard(
                     meta = meta,
@@ -297,6 +296,56 @@ fun PresetsScreen(
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun BuiltInPresetCard(
+    preset: BuiltInPreset,
+    onClick: () -> Unit,
+) {
+    Column(
+        Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+            .combinedClickable(onClick = onClick, onLongClick = null)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .aspectRatio(1.25f)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painterResource(R.drawable.palette),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(32.dp),
+            )
+        }
+        Text(
+            text = preset.name,
+            style = MaterialTheme.typography.titleSmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = preset.description,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = stringResource(R.string.preset_apply),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
     }
 }
 

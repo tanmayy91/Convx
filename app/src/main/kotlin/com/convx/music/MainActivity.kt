@@ -1949,8 +1949,6 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
-                            com.convx.music.ui.component.DonationPromptHost()
-
                             // Both float OVER the full-width NavHost, exactly as the
                             // bottom bar does on a phone: nothing reserves layout
                             // width for them, so content runs underneath instead of

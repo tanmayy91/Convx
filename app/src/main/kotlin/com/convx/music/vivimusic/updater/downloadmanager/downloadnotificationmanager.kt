@@ -19,6 +19,8 @@ object DownloadNotificationManager {
     const val CHANNEL_ID = "download_progress_channel"
     private const val CHANNEL_NAME = "Download Progress" // Will be replaced with context.getString in initialize()
     private const val NOTIFICATION_ID = 5678
+    private var lastProgress = -1
+    private var lastVersion = ""
 
     fun initialize(context: Context) {
         appContext = context
@@ -28,7 +30,9 @@ object DownloadNotificationManager {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 context.getString(R.string.download_progress_channel),
-                NotificationManager.IMPORTANCE_HIGH
+                // Progress is a background status, not an alert. HIGH caused every progress
+                // update to be promoted as a new heads-up notification on some OEM skins.
+                NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = context.getString(R.string.download_progress_description)
                 setShowBadge(false)
@@ -44,6 +48,8 @@ object DownloadNotificationManager {
      * Show download starting notification
      */
     fun showDownloadStarting(version: String, fileSize: String) {
+        lastVersion = version
+        lastProgress = 0
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
             showDownloadStartingModern(version, fileSize)
         } else {
@@ -55,10 +61,18 @@ object DownloadNotificationManager {
      * Update download progress notification
      */
     fun updateDownloadProgress(progress: Int, version: String) {
+        val normalizedProgress = progress.coerceIn(0, 100)
+        if (version == lastVersion && normalizedProgress < 100 &&
+            normalizedProgress < lastProgress + 5
+        ) {
+            return
+        }
+        lastVersion = version
+        lastProgress = normalizedProgress
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
-            updateDownloadProgressModern(progress, version)
+            updateDownloadProgressModern(normalizedProgress, version)
         } else {
-            updateDownloadProgressLegacy(progress, version)
+            updateDownloadProgressLegacy(normalizedProgress, version)
         }
     }
 
@@ -126,6 +140,7 @@ object DownloadNotificationManager {
             .setContentTitle(appContext.getString(R.string.downloading_update))
             .setContentText(appContext.getString(R.string.version_file_size, version, fileSize))
             .setOngoing(true)
+            .setSilent(true)
             .setStyle(progressStyle)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setCategory(Notification.CATEGORY_PROGRESS)
@@ -163,6 +178,7 @@ object DownloadNotificationManager {
             .setContentTitle(appContext.getString(R.string.downloading_update))
             .setContentText(appContext.getString(R.string.version_progress, version, progress))
             .setOngoing(progress < 100)
+            .setSilent(true)
             .setStyle(progressStyle)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setCategory(Notification.CATEGORY_PROGRESS)
@@ -267,7 +283,8 @@ object DownloadNotificationManager {
             .setContentText(appContext.getString(R.string.version_file_size, version, fileSize))
             .setProgress(100, 0, false)
             .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setOnlyAlertOnce(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .build()
@@ -282,7 +299,8 @@ object DownloadNotificationManager {
             .setContentText(appContext.getString(R.string.version_progress, version, progress))
             .setProgress(100, progress, false)
             .setOngoing(progress < 100)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setOnlyAlertOnce(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .build()

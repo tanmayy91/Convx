@@ -1183,16 +1183,6 @@
     <string name="hide_home_favorite_icon_desc">Hides the heart badge on liked songs and albums in Home\'s rows. Library, search, and playlists are unaffected.</string>
     <string name="saavn_fallback_to_youtube">Retry on YouTube if Saavn fails</string>
     <string name="saavn_fallback_to_youtube_desc">On: if no matching track or stream is found on JioSaavn, plays from YouTube instead. Off: playback fails instead of silently swapping to YouTube audio.</string>
-    <string name="support_section">Support</string>
-    <string name="support_upi">UPI</string>
-    <string name="support_kofi">Ko-fi</string>
-    <string name="support_kofi_desc">Buy the developer a coffee</string>
-    <string name="donation_prompt_title">Enjoying Convx?</string>
-    <string name="donation_prompt_message">If Convx has been useful to you, consider chipping in a little to help keep it going. Totally optional, never required.</string>
-    <string name="donation_prompt_upi">Support via UPI</string>
-    <string name="donation_prompt_kofi">Support via Ko-fi</string>
-    <string name="donation_prompt_later">Maybe later</string>
-    <string name="donation_prompt_dont_ask">Don\'t ask again</string>
     <string name="dj_readout_analyzing">Auto-DJ · analysing…</string>
     <string name="hide_volume_bar">Hide Volume Bar</string>
     <string name="hide_volume_bar_desc">Hide the volume slider in the player\'s menu</string>

@@ -8,7 +8,6 @@ package com.convx.music.constants
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -18,9 +17,6 @@ import com.music.innertube.models.IpVersion
 val IsFirstRunKey = booleanPreferencesKey("isFirstRun")
 /** Set once, the first time the app ever runs — gates the donation prompt on "used for
  *  a while" rather than showing it to a brand new install. */
-val FirstLaunchTimestampKey = longPreferencesKey("firstLaunchTimestamp")
-val DonationPromptLastShownKey = longPreferencesKey("donationPromptLastShown")
-val DonationPromptDismissedKey = booleanPreferencesKey("donationPromptDismissed")
 val AppIconKey = stringPreferencesKey("appIcon")
 
 /** JSON map of player-control slot -> user-supplied glyph. See ui/player/customize/PlayerIcons.kt. */

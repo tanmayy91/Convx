@@ -7,6 +7,7 @@ package com.convx.music.ui.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +47,10 @@ fun Material3SettingsGroup(
     title: String? = null,
     items: List<Material3SettingsItem>
 ) {
+    val cardShape = RoundedCornerShape(AppleTokens.CardCorner)
+    val glassConfig = LocalGlassEffectConfig.current
+    val useGlass = isGlassAllowed()
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -68,8 +73,23 @@ fun Material3SettingsGroup(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(AppleTokens.CardCorner))
-                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .clip(cardShape)
+                .then(
+                    if (useGlass) {
+                        Modifier.liquidGlass(
+                            config = glassConfig,
+                            shape = cardShape,
+                            highlightAlpha = 0.22f
+                        )
+                    } else {
+                        Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.86f))
+                    }
+                )
+                .border(
+                    width = 0.8.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                    shape = cardShape
+                )
         ) {
             items.forEachIndexed { index, item ->
                 if (index > 0) {

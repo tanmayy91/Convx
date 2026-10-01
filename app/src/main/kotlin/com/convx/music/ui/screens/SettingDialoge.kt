@@ -3,6 +3,7 @@ package com.convx.music.ui.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import com.convx.music.ui.utils.bounceClick
 import com.convx.music.ui.utils.combinedBounceClick
 import androidx.compose.foundation.layout.*
@@ -38,6 +39,10 @@ import com.convx.music.constants.InnerTubeCookieKey
 import com.convx.music.constants.UseLoginForBrowse
 import com.convx.music.constants.YtmSyncKey
 import com.convx.music.BuildConfig
+import com.convx.music.ui.component.LocalGlassEffectConfig
+import com.convx.music.ui.component.isGlassAllowed
+import com.convx.music.ui.component.liquidGlass
+import com.convx.music.ui.theme.AppleTokens
 import com.convx.music.utils.rememberPreference
 import com.convx.music.viewmodels.HomeViewModel
 import kotlinx.coroutines.flow.map
@@ -84,14 +89,45 @@ fun SettingDialoge(
         val onPrimaryColor = MaterialTheme.colorScheme.onSurface
         val secondaryColor = MaterialTheme.colorScheme.secondaryContainer
         val onSecondaryColor = MaterialTheme.colorScheme.onSecondaryContainer
+        val glassConfig = LocalGlassEffectConfig.current
+        val useGlass = isGlassAllowed()
+        val dialogShape = RoundedCornerShape(AppleTokens.DialogCorner)
+        val sectionShape = RoundedCornerShape(24.dp)
+        val sectionColor = if (useGlass) {
+            onPrimaryColor.copy(alpha = 0.07f)
+        } else {
+            secondaryColor
+        }
+        val dividerColor = if (useGlass) {
+            onPrimaryColor.copy(alpha = 0.16f)
+        } else {
+            onSecondaryColor.copy(alpha = 0.2f)
+        }
 
         Surface(
             modifier = Modifier
                 .padding(24.dp)
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(28.dp),
-            color = primaryColor,
-            tonalElevation = 8.dp
+                .fillMaxWidth()
+                .then(
+                    if (useGlass) {
+                        Modifier.liquidGlass(
+                            config = glassConfig,
+                            shape = dialogShape,
+                            highlightAlpha = 0.24f
+                        )
+                    } else {
+                        Modifier.background(primaryColor, dialogShape)
+                    }
+                )
+                .border(
+                    width = 0.8.dp,
+                    color = onPrimaryColor.copy(alpha = if (useGlass) 0.26f else 0.1f),
+                    shape = dialogShape
+                ),
+            shape = dialogShape,
+            color = Color.Transparent,
+            tonalElevation = 0.dp,
+            shadowElevation = if (useGlass) 0.dp else 8.dp
         ) {
             Column(
                 modifier = Modifier
@@ -140,15 +176,8 @@ fun SettingDialoge(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(
-                            RoundedCornerShape(
-                                topStart = 25.dp,
-                                topEnd = 25.dp,
-                                bottomStart = 2.dp,
-                                bottomEnd = 2.dp
-                            )
-                        )
-                        .background(color = secondaryColor)
+                        .clip(sectionShape)
+                        .background(color = sectionColor)
                         .bounceClick(enabled = isLoggedIn) {
                             onNavigate("account")
                         }
@@ -235,15 +264,8 @@ fun SettingDialoge(
                 // Options List
                 Column(
                     modifier = Modifier
-                        .clip(
-                            RoundedCornerShape(
-                                topStart = 2.dp,
-                                topEnd = 2.dp,
-                                bottomStart = 25.dp,
-                                bottomEnd = 25.dp
-                            )
-                        )
-                        .background(color = secondaryColor)
+                        .clip(sectionShape)
+                        .background(color = sectionColor)
                 ) {
                     OptionItem(
                         option = Option("Playlists", R.drawable.library_music_outlined),
@@ -251,12 +273,14 @@ fun SettingDialoge(
                         textColor = onSecondaryColor,
                         trailingText = playlistCount.toString()
                     )
+                    HorizontalDivider(thickness = 0.5.dp, color = dividerColor, modifier = Modifier.padding(start = 56.dp))
                     OptionItem(
                         option = Option("Albums", R.drawable.album),
                         tintColor = onPrimaryColor,
                         textColor = onSecondaryColor,
                         trailingText = albumCount.toString()
                     )
+                    HorizontalDivider(thickness = 0.5.dp, color = dividerColor, modifier = Modifier.padding(start = 56.dp))
                     OptionItem(
                         option = Option("Liked Songs", R.drawable.favorite_border),
                         tintColor = onPrimaryColor,
@@ -265,6 +289,7 @@ fun SettingDialoge(
                     )
 
                     if (isLoggedIn) {
+                        HorizontalDivider(thickness = 0.5.dp, color = dividerColor, modifier = Modifier.padding(start = 56.dp))
                         SwitchOptionItem(
                             title = "Use Account for Browsing",
                             icon = R.drawable.add_circle,
@@ -276,6 +301,7 @@ fun SettingDialoge(
                             tintColor = onPrimaryColor,
                             textColor = onSecondaryColor
                         )
+                        HorizontalDivider(thickness = 0.5.dp, color = dividerColor, modifier = Modifier.padding(start = 56.dp))
                         SwitchOptionItem(
                             title = "YouTube Music Sync",
                             icon = R.drawable.cached,
@@ -292,20 +318,33 @@ fun SettingDialoge(
                     Option("Settings", R.drawable.settings),
                     Option("About", R.drawable.info)
                 )
-                extraOptions.forEach { option ->
-                    OptionItem(
-                        option = option,
-                        tintColor = onPrimaryColor,
-                        textColor = onPrimaryColor,
-                        trailingText = if (option.title == "About") BuildConfig.VERSION_NAME else null,
-                        onClick = {
-                            if (option.title == "Settings") {
-                                onNavigate("settings")
-                            } else if (option.title == "About") {
-                                onNavigate("settings/about")
+                Column(
+                    modifier = Modifier
+                        .clip(sectionShape)
+                        .background(color = sectionColor)
+                ) {
+                    extraOptions.forEachIndexed { index, option ->
+                        OptionItem(
+                            option = option,
+                            tintColor = onPrimaryColor,
+                            textColor = onPrimaryColor,
+                            trailingText = if (option.title == "About") BuildConfig.VERSION_NAME else null,
+                            onClick = {
+                                if (option.title == "Settings") {
+                                    onNavigate("settings")
+                                } else if (option.title == "About") {
+                                    onNavigate("settings/about")
+                                }
                             }
+                        )
+                        if (index < extraOptions.lastIndex) {
+                            HorizontalDivider(
+                                thickness = 0.5.dp,
+                                color = dividerColor,
+                                modifier = Modifier.padding(start = 56.dp)
+                            )
                         }
-                    )
+                    }
                 }
 
                 // Footer
@@ -358,7 +397,7 @@ private fun OptionItem(
     val modifier = Modifier
         .fillMaxWidth()
         .then(if (onClick != null) Modifier.bounceClick { onClick() } else Modifier)
-        .padding(12.dp)
+        .padding(horizontal = 12.dp, vertical = 14.dp)
 
     Row(
         modifier = modifier,
@@ -377,7 +416,7 @@ private fun OptionItem(
             modifier = Modifier.weight(1f),
             text = option.title,
             color = textColor,
-            fontSize = 14.sp,
+            fontSize = 15.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -445,5 +484,4 @@ private fun SwitchOptionItem(
         )
     }
 }
-
 

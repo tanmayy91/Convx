@@ -38,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
@@ -67,10 +68,27 @@ fun DefaultDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
+        val glassConfig = LocalGlassEffectConfig.current
+        val dialogShape = AlertDialogDefaults.shape
+        val useGlass = glassConfig.isEnabledFor(GlassComponent.NAV_BAR) &&
+            isGlassAllowed() &&
+            dialogShape is CornerBasedShape
         Surface(
-            modifier = Modifier.padding(24.dp),
-            shape = AlertDialogDefaults.shape,
-            color = AlertDialogDefaults.containerColor,
+            modifier = Modifier
+                .padding(24.dp)
+                .then(
+                    if (useGlass) {
+                        Modifier.liquidGlass(
+                            config = glassConfig,
+                            shape = dialogShape as CornerBasedShape,
+                            highlightAlpha = 0.25f,
+                        )
+                    } else {
+                        Modifier
+                    }
+                ),
+            shape = dialogShape,
+            color = if (useGlass) androidx.compose.ui.graphics.Color.Transparent else AlertDialogDefaults.containerColor,
             tonalElevation = AlertDialogDefaults.TonalElevation
         ) {
             Column(
@@ -193,10 +211,27 @@ fun ListDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
+        val glassConfig = LocalGlassEffectConfig.current
+        val dialogShape = AlertDialogDefaults.shape
+        val useGlass = glassConfig.isEnabledFor(GlassComponent.NAV_BAR) &&
+            isGlassAllowed() &&
+            dialogShape is CornerBasedShape
         Surface(
-            modifier = Modifier.padding(24.dp),
-            shape = AlertDialogDefaults.shape,
-            color = AlertDialogDefaults.containerColor,
+            modifier = Modifier
+                .padding(24.dp)
+                .then(
+                    if (useGlass) {
+                        Modifier.liquidGlass(
+                            config = glassConfig,
+                            shape = dialogShape as CornerBasedShape,
+                            highlightAlpha = 0.25f,
+                        )
+                    } else {
+                        Modifier
+                    }
+                ),
+            shape = dialogShape,
+            color = if (useGlass) androidx.compose.ui.graphics.Color.Transparent else AlertDialogDefaults.containerColor,
             tonalElevation = AlertDialogDefaults.TonalElevation,
         ) {
             Column(

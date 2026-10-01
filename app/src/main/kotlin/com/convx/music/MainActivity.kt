@@ -23,6 +23,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.animation.core.spring
@@ -407,6 +409,8 @@ class MainActivity : ComponentActivity() {
         // the animation and the route's own screen transition from overlapping.
         // Comfortably past the crossfade's own ~300ms so it always finishes first.
         private const val SearchNavTransitionDelayMs = 360L
+        private const val RouteSlideDurationMs = 380
+        private const val RouteFadeDurationMs = 280
     }
 
     @Inject
@@ -1803,9 +1807,29 @@ class MainActivity : ComponentActivity() {
                                         }
 
                                         if (currentRouteIndex == -1 || currentRouteIndex > previousRouteIndex)
-                                            slideInHorizontally { it / 8 } + fadeIn(tween(200))
+                                            slideInHorizontally(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteSlideDurationMs,
+                                                    easing = FastOutSlowInEasing,
+                                                ),
+                                            ) { it / 10 } + fadeIn(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteFadeDurationMs,
+                                                    easing = LinearOutSlowInEasing,
+                                                ),
+                                            )
                                         else
-                                            slideInHorizontally { -it / 8 } + fadeIn(tween(200))
+                                            slideInHorizontally(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteSlideDurationMs,
+                                                    easing = FastOutSlowInEasing,
+                                                ),
+                                            ) { -it / 10 } + fadeIn(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteFadeDurationMs,
+                                                    easing = LinearOutSlowInEasing,
+                                                ),
+                                            )
                                     },
                                     // Exit Transition - smoother with smaller offset and longer duration
                                     exitTransition = {
@@ -1817,9 +1841,29 @@ class MainActivity : ComponentActivity() {
                                         }
 
                                         if (targetRouteIndex == -1 || targetRouteIndex > currentRouteIndex)
-                                            slideOutHorizontally { -it / 8 } + fadeOut(tween(200))
+                                            slideOutHorizontally(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteSlideDurationMs,
+                                                    easing = FastOutSlowInEasing,
+                                                ),
+                                            ) { -it / 10 } + fadeOut(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteFadeDurationMs,
+                                                    easing = FastOutSlowInEasing,
+                                                ),
+                                            )
                                         else
-                                            slideOutHorizontally { it / 8 } + fadeOut(tween(200))
+                                            slideOutHorizontally(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteSlideDurationMs,
+                                                    easing = FastOutSlowInEasing,
+                                                ),
+                                            ) { it / 10 } + fadeOut(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteFadeDurationMs,
+                                                    easing = FastOutSlowInEasing,
+                                                ),
+                                            )
                                     },
                                     // Pop Enter Transition - smoother with smaller offset and longer duration
                                     popEnterTransition = {
@@ -1831,9 +1875,29 @@ class MainActivity : ComponentActivity() {
                                         }
 
                                         if (previousRouteIndex != -1 && previousRouteIndex < currentRouteIndex)
-                                            slideInHorizontally { it / 8 } + fadeIn(tween(200))
+                                            slideInHorizontally(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteSlideDurationMs,
+                                                    easing = FastOutSlowInEasing,
+                                                ),
+                                            ) { it / 10 } + fadeIn(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteFadeDurationMs,
+                                                    easing = LinearOutSlowInEasing,
+                                                ),
+                                            )
                                         else
-                                            slideInHorizontally { -it / 8 } + fadeIn(tween(200))
+                                            slideInHorizontally(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteSlideDurationMs,
+                                                    easing = FastOutSlowInEasing,
+                                                ),
+                                            ) { -it / 10 } + fadeIn(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteFadeDurationMs,
+                                                    easing = LinearOutSlowInEasing,
+                                                ),
+                                            )
                                     },
                                     // Pop Exit Transition - smoother with smaller offset and longer duration
                                     popExitTransition = {
@@ -1845,9 +1909,29 @@ class MainActivity : ComponentActivity() {
                                         }
 
                                         if (currentRouteIndex != -1 && currentRouteIndex < targetRouteIndex)
-                                            slideOutHorizontally { -it / 8 } + fadeOut(tween(200))
+                                            slideOutHorizontally(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteSlideDurationMs,
+                                                    easing = FastOutSlowInEasing,
+                                                ),
+                                            ) { -it / 10 } + fadeOut(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteFadeDurationMs,
+                                                    easing = FastOutSlowInEasing,
+                                                ),
+                                            )
                                         else
-                                            slideOutHorizontally { it / 8 } + fadeOut(tween(200))
+                                            slideOutHorizontally(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteSlideDurationMs,
+                                                    easing = FastOutSlowInEasing,
+                                                ),
+                                            ) { it / 10 } + fadeOut(
+                                                animationSpec = tween(
+                                                    durationMillis = RouteFadeDurationMs,
+                                                    easing = FastOutSlowInEasing,
+                                                ),
+                                            )
                                     },
                                     modifier = Modifier
                                         // Skipped on WebView routes: layerBackdrop records
@@ -2317,6 +2401,5 @@ val LocalIsPlayerExpanded = compositionLocalOf { false }
  * phone's full-bleed hero.
  */
 val LocalTabView = compositionLocalOf { false }
-
 
 

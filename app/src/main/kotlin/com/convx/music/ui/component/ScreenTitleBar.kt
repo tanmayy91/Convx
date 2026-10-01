@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -121,6 +123,10 @@ fun CollapsedTitleBar(
     color: Color? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
+    val glassConfig = LocalGlassEffectConfig.current
+    val chromeShape = RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp)
+    val useGlass = glassConfig.isEnabledFor(GlassComponent.NAV_BAR) && isGlassAllowed()
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -128,6 +134,18 @@ fun CollapsedTitleBar(
             .height(AppBarHeight)
             .graphicsLayer { alpha = progress },
     ) {
+        if (useGlass) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .liquidGlass(
+                        config = glassConfig,
+                        shape = chromeShape,
+                        highlightAlpha = 0.22f,
+                    )
+            )
+        }
+
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,

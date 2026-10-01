@@ -91,7 +91,7 @@ fun SettingDialoge(
         val onSecondaryColor = MaterialTheme.colorScheme.onSecondaryContainer
         val glassConfig = LocalGlassEffectConfig.current
         val useGlass = isGlassAllowed()
-        val dialogShape = RoundedCornerShape(AppleTokens.DialogCorner)
+        val dialogShape = RoundedCornerShape(AppleTokens.CardCornerLarge)
         val sectionShape = RoundedCornerShape(24.dp)
         val sectionColor = if (useGlass) {
             onPrimaryColor.copy(alpha = 0.07f)
@@ -484,4 +484,3 @@ private fun SwitchOptionItem(
         )
     }
 }
-

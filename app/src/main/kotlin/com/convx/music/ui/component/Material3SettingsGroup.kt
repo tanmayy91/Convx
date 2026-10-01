@@ -49,7 +49,7 @@ fun Material3SettingsGroup(
 ) {
     val cardShape = RoundedCornerShape(AppleTokens.CardCorner)
     val glassConfig = LocalGlassEffectConfig.current
-    val useGlass = isGlassAllowed()
+    val useGlass = glassConfig.isEnabledFor(GlassComponent.NAV_BAR) && isGlassAllowed()
 
     Column(
         modifier = Modifier
